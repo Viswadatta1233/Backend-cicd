@@ -1,0 +1,30 @@
+name: Backend CI/CD
+
+on:
+  push:
+    paths:
+      - 'Backend/**'
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/cicd-backend:latest ./Backend
+      - name: Login to DockerHub
+        run: echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+      - name: Push Docker image
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/cicd-backend:latest
+
+  deploy:
+    runs-on: [self-hosted, backend]
+    needs: build-and-push
+    steps:
+      - name: Pull Docker image
+        run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/cicd-backend:latest
+      - name: Stop old container
+        run: docker rm -f cicd-backend || true
+      - name: Run new container
+        run: docker run -d --name cicd-backend -p 4000:4000 ${{ secrets.DOCKERHUB_USERNAME }}/cicd-backend:latest 
