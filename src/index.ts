@@ -3,7 +3,7 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 app.get("/api/hello", (req: Request, res: Response) => {
-  res.json({ message: "Hello from Express + TypeScript API!" });
+  res.json({ message: "Hello from Express + TypeScript API! using cicd test" });
 });
 
 app.listen(PORT, () => {
